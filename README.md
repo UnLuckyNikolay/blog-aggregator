@@ -44,6 +44,12 @@ go install github.com/pressly/goose/v3/cmd/goose@latest
 goose postgres *database_url* up
 ```
 
+4. Install SQLC:
+
+```bash
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+```
+
 ?. ???
 
 Last. Profit

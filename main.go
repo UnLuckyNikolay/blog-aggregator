@@ -1,12 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
+	_ "github.com/lib/pq"
+
 	cmds "github.com/UnLuckyNikolay/blog-aggregator/internal/command_handlers"
 	"github.com/UnLuckyNikolay/blog-aggregator/internal/config"
+	"github.com/UnLuckyNikolay/blog-aggregator/internal/database"
 )
 
 func main() {
@@ -20,6 +24,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	db, err := sql.Open("postgres", state.Cfg.DbUrl)
+	state.Db = database.New(db)
 
 	args := os.Args // 0 - path, 1 - cmd name, 2+ - cmd args
 	if len(args) < 2 {
