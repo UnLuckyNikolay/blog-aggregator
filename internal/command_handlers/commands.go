@@ -25,6 +25,7 @@ func (c *CommandManager) Initialize() {
 	c.register("login", handlerLogin)
 	c.register("register", handlerRegister)
 	c.register("reset", handlerReset)
+	c.register("users", handlerUsers)
 }
 
 func (c *CommandManager) HandleCommand(s *State, osArgs []string) error {
@@ -121,6 +122,29 @@ func handlerReset(s *State, cmd command) error {
 	err := s.Db.ResetUsers(context.Background())
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	return nil
+}
+
+func handlerUsers(s *State, cmd command) error {
+	if len(cmd.args) != 0 {
+		return errors.New("Users command requires no arguments.")
+	}
+
+	users, err := s.Db.GetUsers(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, user := range users {
+		var currentCheck string
+		if user.Name == s.Cfg.CurrentUserName {
+			currentCheck = " (current)"
+		} else {
+			currentCheck = ""
+		}
+		fmt.Printf("* %s%s\n", user.Name, currentCheck)
 	}
 
 	return nil
