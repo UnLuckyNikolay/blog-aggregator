@@ -19,10 +19,29 @@ To check current version:
 psql --version
 ```
 
-3. (Linux only) Update postgres password:
+2.1. (Linux only) Update postgres password if needed:
 
 ```bash
 sudo passwd postgres
+```
+
+2.2. Start Postgres server and enter the shell:
+
+```bash
+sudo service postgresql start
+sudo -u postgres psql
+```
+
+3. Install Goose:
+
+```bash
+go install github.com/pressly/goose/v3/cmd/goose@latest
+```
+
+3.1. Build database. In `sql/schema/` run:
+
+```bash
+goose postgres *database_url* up
 ```
 
 ?. ???
