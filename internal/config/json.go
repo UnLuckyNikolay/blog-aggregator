@@ -23,19 +23,19 @@ func getConfigFilePath() string {
 	return path
 }
 
-func ReadConfig() (Config, error) {
+func ReadConfig() (*Config, error) {
 	data, err := os.ReadFile(getConfigFilePath())
 	if err != nil {
-		return Config{}, err
+		return nil, err
 	}
 
 	var cfg Config
 	err = json.Unmarshal(data, &cfg)
 	if err != nil {
-		return Config{}, err
+		return nil, err
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }
 
 func writeConfig(cfg Config) error {
