@@ -28,6 +28,8 @@ func (c *CommandManager) Initialize() {
 	c.register("register", handlerRegister)
 	c.register("reset", handlerReset)
 	c.register("users", handlerUsers)
+	c.register("agg", handlerAgg)
+	c.register("addfeed", handlerAddfeed)
 }
 
 func (c *CommandManager) HandleCommand(s *state.State, osArgs []string) error {
@@ -60,7 +62,7 @@ func (c *CommandManager) run(s *state.State, cmd command) error {
 
 	_, ok := c.list[cmd.name]
 	if !ok {
-		return fmt.Errorf("Command `%s`not found.", cmd.name)
+		return fmt.Errorf("Command `%s` not found.", cmd.name)
 	}
 
 	err = c.list[cmd.name](s, cmd)
@@ -72,7 +74,7 @@ func (c *CommandManager) run(s *state.State, cmd command) error {
 
 func handlerLogin(s *state.State, cmd command) error {
 	if len(cmd.args) != 1 {
-		return errors.New("Login command requires 1 argument: username.")
+		return errors.New("Command `login` requires 1 argument: username.")
 	}
 	name := cmd.args[0]
 
@@ -92,7 +94,7 @@ func handlerLogin(s *state.State, cmd command) error {
 
 func handlerRegister(s *state.State, cmd command) error {
 	if len(cmd.args) != 1 {
-		return errors.New("Register command requires 1 argument: username.")
+		return errors.New("Command `register` requires 1 argument: username.")
 	}
 	name := cmd.args[0]
 
@@ -106,8 +108,8 @@ func handlerRegister(s *state.State, cmd command) error {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("User `%s` successfully registered.\n", name)
-	fmt.Println(user)
+	fmt.Printf("User `%s` successfully registered.\n", user.Name)
+	//fmt.Println(user)
 	err = s.Cfg.SetUser(name)
 	if err != nil {
 		return err
@@ -118,7 +120,7 @@ func handlerRegister(s *state.State, cmd command) error {
 
 func handlerReset(s *state.State, cmd command) error {
 	if len(cmd.args) != 0 {
-		return errors.New("Reset command requires no arguments.")
+		return errors.New("Command `reset` requires no arguments.")
 	}
 
 	err := s.Db.ResetUsers(context.Background())
@@ -131,7 +133,7 @@ func handlerReset(s *state.State, cmd command) error {
 
 func handlerUsers(s *state.State, cmd command) error {
 	if len(cmd.args) != 0 {
-		return errors.New("Users command requires no arguments.")
+		return errors.New("Command `users` requires no arguments.")
 	}
 
 	users, err := s.Db.GetUsers(context.Background())
@@ -154,13 +156,35 @@ func handlerUsers(s *state.State, cmd command) error {
 
 func handlerAgg(s *state.State, cmd command) error {
 	if len(cmd.args) != 0 {
-		return errors.New("Agg command requires no arguments.")
+		return errors.New("Command `agg` requires no arguments.")
 	}
 
 	err := rssfeed.Agg(s)
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func handlerAddfeed(s *state.State, cmd command) error {
+	if len(cmd.args) != 2 {
+		return errors.New("Command `addfeed` requires 2 arguments: name, url.")
+	}
+
+	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	s.Db.AddFeed(context.Background(), database.AddFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.args[0],
+		Url:       cmd.args[1],
+		UserID:    user.ID,
+	})
 
 	return nil
 }
