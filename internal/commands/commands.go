@@ -1,4 +1,4 @@
-package commandhandlers
+package commands
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/UnLuckyNikolay/blog-aggregator/internal/database"
+	"github.com/UnLuckyNikolay/blog-aggregator/internal/rssfeed"
+	"github.com/UnLuckyNikolay/blog-aggregator/internal/state"
 	"github.com/google/uuid"
 )
 
@@ -17,18 +19,18 @@ type command struct {
 }
 
 type CommandManager struct {
-	list map[string]func(*State, command) error
+	list map[string]func(*state.State, command) error
 }
 
 func (c *CommandManager) Initialize() {
-	c.list = map[string]func(*State, command) error{}
+	c.list = map[string]func(*state.State, command) error{}
 	c.register("login", handlerLogin)
 	c.register("register", handlerRegister)
 	c.register("reset", handlerReset)
 	c.register("users", handlerUsers)
 }
 
-func (c *CommandManager) HandleCommand(s *State, osArgs []string) error {
+func (c *CommandManager) HandleCommand(s *state.State, osArgs []string) error {
 	if len(osArgs) < 2 {
 		return fmt.Errorf("Not enough arguments.")
 	}
@@ -49,11 +51,11 @@ func (c *CommandManager) HandleCommand(s *State, osArgs []string) error {
 	return nil
 }
 
-func (c *CommandManager) register(name string, f func(*State, command) error) {
+func (c *CommandManager) register(name string, f func(*state.State, command) error) {
 	c.list[name] = f
 }
 
-func (c *CommandManager) run(s *State, cmd command) error {
+func (c *CommandManager) run(s *state.State, cmd command) error {
 	var err error
 
 	_, ok := c.list[cmd.name]
@@ -68,7 +70,7 @@ func (c *CommandManager) run(s *State, cmd command) error {
 	return nil
 }
 
-func handlerLogin(s *State, cmd command) error {
+func handlerLogin(s *state.State, cmd command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Login command requires 1 argument: username.")
 	}
@@ -88,7 +90,7 @@ func handlerLogin(s *State, cmd command) error {
 	return nil
 }
 
-func handlerRegister(s *State, cmd command) error {
+func handlerRegister(s *state.State, cmd command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Register command requires 1 argument: username.")
 	}
@@ -114,7 +116,7 @@ func handlerRegister(s *State, cmd command) error {
 	return nil
 }
 
-func handlerReset(s *State, cmd command) error {
+func handlerReset(s *state.State, cmd command) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Reset command requires no arguments.")
 	}
@@ -127,7 +129,7 @@ func handlerReset(s *State, cmd command) error {
 	return nil
 }
 
-func handlerUsers(s *State, cmd command) error {
+func handlerUsers(s *state.State, cmd command) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Users command requires no arguments.")
 	}
@@ -145,6 +147,19 @@ func handlerUsers(s *State, cmd command) error {
 			currentCheck = ""
 		}
 		fmt.Printf("* %s%s\n", user.Name, currentCheck)
+	}
+
+	return nil
+}
+
+func handlerAgg(s *state.State, cmd command) error {
+	if len(cmd.args) != 0 {
+		return errors.New("Agg command requires no arguments.")
+	}
+
+	err := rssfeed.Agg(s)
+	if err != nil {
+		return err
 	}
 
 	return nil
