@@ -30,6 +30,7 @@ func (c *CommandManager) Initialize() {
 	c.register("users", handlerUsers)
 	c.register("agg", handlerAgg)
 	c.register("addfeed", handlerAddfeed)
+	c.register("feeds", handlerFeeds)
 }
 
 func (c *CommandManager) HandleCommand(s *state.State, osArgs []string) error {
@@ -177,7 +178,7 @@ func handlerAddfeed(s *state.State, cmd command) error {
 		return err
 	}
 
-	s.Db.AddFeed(context.Background(), database.AddFeedParams{
+	feed, err := s.Db.AddFeed(context.Background(), database.AddFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -185,6 +186,29 @@ func handlerAddfeed(s *state.State, cmd command) error {
 		Url:       cmd.args[1],
 		UserID:    user.ID,
 	})
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Successfully added new feed `%s` (%s)", feed.Name, feed.Url)
+
+	return nil
+}
+
+func handlerFeeds(s *state.State, cmd command) error {
+	if len(cmd.args) != 0 {
+		return errors.New("Command `feeds` requires no arguments.")
+	}
+
+	feeds, err := s.Db.GetFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, feed := range feeds {
+		fmt.Printf("RSS Name: %s\n", feed.Name)
+		fmt.Printf("URL: %s\n", feed.Url)
+		fmt.Printf("Added by user: %s\n", feed.UserName)
+	}
 
 	return nil
 }
