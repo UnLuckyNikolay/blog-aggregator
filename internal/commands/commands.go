@@ -13,66 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type command struct {
-	name string
-	args []string
-}
-
-type CommandManager struct {
-	list map[string]func(*state.State, command) error
-}
-
-func (c *CommandManager) Initialize() {
-	c.list = map[string]func(*state.State, command) error{}
-	c.register("login", handlerLogin)
-	c.register("register", handlerRegister)
-	c.register("reset", handlerReset)
-	c.register("users", handlerUsers)
-	c.register("agg", handlerAgg)
-	c.register("addfeed", handlerAddfeed)
-	c.register("feeds", handlerFeeds)
-}
-
-func (c *CommandManager) HandleCommand(s *state.State, osArgs []string) error {
-	if len(osArgs) < 2 {
-		return fmt.Errorf("Not enough arguments.")
-	}
-
-	cmd := command{
-		name: osArgs[1],
-		args: []string{},
-	}
-	if len(osArgs) > 2 {
-		cmd.args = osArgs[2:]
-	}
-
-	err := c.run(s, cmd)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *CommandManager) register(name string, f func(*state.State, command) error) {
-	c.list[name] = f
-}
-
-func (c *CommandManager) run(s *state.State, cmd command) error {
-	var err error
-
-	_, ok := c.list[cmd.name]
-	if !ok {
-		return fmt.Errorf("Command `%s` not found.", cmd.name)
-	}
-
-	err = c.list[cmd.name](s, cmd)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func handlerLogin(s *state.State, cmd command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Command `login` requires 1 argument: username.")
@@ -128,6 +68,8 @@ func handlerReset(s *state.State, cmd command) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("The tables have been reset.")
 
 	return nil
 }
@@ -189,7 +131,15 @@ func handlerAddfeed(s *state.State, cmd command) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Successfully added new feed `%s` (%s)", feed.Name, feed.Url)
+	fmt.Printf("Successfully added new feed `%s` (%s)\n", feed.Name, feed.Url)
+
+	err = handlerFollow(s, command{
+		name: "follow",
+		args: []string{cmd.args[1]},
+	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -205,9 +155,57 @@ func handlerFeeds(s *state.State, cmd command) error {
 	}
 
 	for _, feed := range feeds {
-		fmt.Printf("RSS Name: %s\n", feed.Name)
-		fmt.Printf("URL: %s\n", feed.Url)
-		fmt.Printf("Added by user: %s\n", feed.UserName)
+		fmt.Printf("> RSS Name: %s\n", feed.Name)
+		fmt.Printf("  URL: %s\n", feed.Url)
+		fmt.Printf("  Added by user: %s\n", feed.UserName)
+	}
+
+	return nil
+}
+
+func handlerFollow(s *state.State, cmd command) error {
+	if len(cmd.args) != 1 {
+		return errors.New("Command `follow` requires 1 argument: url.")
+	}
+
+	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feedFollow, err := s.Db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedUrl:   cmd.args[0],
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("User %s now follows '%s' feed.\n", user.Name, feedFollow.FeedName)
+
+	return nil
+}
+
+func handlerFollowing(s *state.State, cmd command) error {
+	if len(cmd.args) != 0 {
+		return errors.New("Command `following` requires 0 arguments.")
+	}
+
+	feedList, err := s.Db.GetFeedFollowsForUser(context.Background(), s.Cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	if len(feedList) == 0 {
+		fmt.Printf("%s currently doesn't follow any feeds.\n", s.Cfg.CurrentUserName)
+	} else {
+		fmt.Printf("%s's followed feeds:\n", s.Cfg.CurrentUserName)
+		for _, feed := range feedList {
+			fmt.Printf("> %s\n", feed)
+		}
 	}
 
 	return nil

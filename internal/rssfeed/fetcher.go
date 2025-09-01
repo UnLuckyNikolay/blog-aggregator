@@ -3,6 +3,7 @@ package rssfeed
 import (
 	"context"
 	"encoding/xml"
+	"fmt"
 	"html"
 	"io"
 	"net/http"
@@ -34,6 +35,7 @@ func FetchFeed(s *state.State, ctx context.Context, feedUrl string) (*RSSFeed, e
 
 	req.Header.Set("User-Agent", "Gator")
 
+	fmt.Printf("Sending a 'GET' request to '%s'...\n", feedUrl)
 	res, err := s.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
