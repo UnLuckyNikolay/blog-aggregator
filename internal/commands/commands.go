@@ -110,14 +110,9 @@ func handlerAgg(s *state.State, cmd command) error {
 	return nil
 }
 
-func handlerAddfeed(s *state.State, cmd command) error {
+func handlerAddfeed(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return errors.New("Command `addfeed` requires 2 arguments: name, url.")
-	}
-
-	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
-	if err != nil {
-		return err
 	}
 
 	feed, err := s.Db.AddFeed(context.Background(), database.AddFeedParams{
@@ -136,7 +131,7 @@ func handlerAddfeed(s *state.State, cmd command) error {
 	err = handlerFollow(s, command{
 		name: "follow",
 		args: []string{cmd.args[1]},
-	})
+	}, user)
 	if err != nil {
 		return err
 	}
@@ -144,7 +139,7 @@ func handlerAddfeed(s *state.State, cmd command) error {
 	return nil
 }
 
-func handlerFeeds(s *state.State, cmd command) error {
+func handlerFeeds(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Command `feeds` requires no arguments.")
 	}
@@ -163,14 +158,9 @@ func handlerFeeds(s *state.State, cmd command) error {
 	return nil
 }
 
-func handlerFollow(s *state.State, cmd command) error {
+func handlerFollow(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Command `follow` requires 1 argument: url.")
-	}
-
-	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
-	if err != nil {
-		return err
 	}
 
 	feedFollow, err := s.Db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
@@ -189,20 +179,20 @@ func handlerFollow(s *state.State, cmd command) error {
 	return nil
 }
 
-func handlerFollowing(s *state.State, cmd command) error {
+func handlerFollowing(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Command `following` requires 0 arguments.")
 	}
 
-	feedList, err := s.Db.GetFeedFollowsForUser(context.Background(), s.Cfg.CurrentUserName)
+	feedList, err := s.Db.GetFeedFollowsForUser(context.Background(), user.Name)
 	if err != nil {
 		return err
 	}
 
 	if len(feedList) == 0 {
-		fmt.Printf("%s currently doesn't follow any feeds.\n", s.Cfg.CurrentUserName)
+		fmt.Printf("%s currently doesn't follow any feeds.\n", user.Name)
 	} else {
-		fmt.Printf("%s's followed feeds:\n", s.Cfg.CurrentUserName)
+		fmt.Printf("%s's followed feeds:\n", user.Name)
 		for _, feed := range feedList {
 			fmt.Printf("> %s\n", feed)
 		}

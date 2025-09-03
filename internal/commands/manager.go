@@ -22,10 +22,10 @@ func (c *CommandManager) Initialize() {
 	c.register("reset", handlerReset)
 	c.register("users", handlerUsers)
 	c.register("agg", handlerAgg)
-	c.register("addfeed", handlerAddfeed)
-	c.register("feeds", handlerFeeds)
-	c.register("follow", handlerFollow)
-	c.register("following", handlerFollowing)
+	c.register("addfeed", middlewareLoggedIn(handlerAddfeed))
+	c.register("feeds", middlewareLoggedIn(handlerFeeds))
+	c.register("follow", middlewareLoggedIn(handlerFollow))
+	c.register("following", middlewareLoggedIn(handlerFollowing))
 }
 
 func (c *CommandManager) HandleCommand(s *state.State, osArgs []string) error {
