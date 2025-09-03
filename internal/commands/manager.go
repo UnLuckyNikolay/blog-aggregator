@@ -26,6 +26,7 @@ func (c *CommandManager) Initialize() {
 	c.register("feeds", middlewareLoggedIn(handlerFeeds))
 	c.register("follow", middlewareLoggedIn(handlerFollow))
 	c.register("following", middlewareLoggedIn(handlerFollowing))
+	c.register("unfollow", middlewareLoggedIn(handlerUnfollow))
 }
 
 func (c *CommandManager) HandleCommand(s *state.State, osArgs []string) error {

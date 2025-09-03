@@ -30,6 +30,21 @@ ON new_feed_follow.feed_id = feeds.id
 INNER JOIN users
 ON new_feed_follow.user_id = users.id;
 
+-- name: DeleteFeedFollow :one
+WITH del AS (
+    DELETE
+    FROM feed_follows ff
+    USING feeds f
+    WHERE ff.feed_id = f.id
+        AND ff.user_id = sqlc.arg('user_id')
+        AND f.url = sqlc.arg('feed_url')
+    RETURNING ff.feed_id
+)
+SELECT f.*
+FROM feeds f
+JOIN del
+ON del.feed_id = f.id;
+
 -- name: GetFeedFollowsForUser :many
 SELECT feeds.name
 FROM feed_follows
