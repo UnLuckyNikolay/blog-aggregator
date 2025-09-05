@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -64,12 +65,20 @@ func (q *Queries) AddFeed(ctx context.Context, arg AddFeedParams) (Feed, error) 
 }
 
 const getFeeds = `-- name: GetFeeds :many
-WITH follow_count AS (
-    SELECT 
-        feed_id,
-        COUNT(user_id) AS follower_count
-    FROM feed_follows
-    GROUP BY feed_id
+WITH 
+    follow_count AS (
+        SELECT 
+            feed_id,
+            COUNT(user_id) AS follower_count
+        FROM feed_follows
+        GROUP BY feed_id
+),
+    post_count AS (
+        SELECT 
+            feed_id,
+            COUNT(id) AS post_count
+        FROM posts
+        GROUP BY feed_id
 )
 SELECT 
     f.id, 
@@ -77,12 +86,15 @@ SELECT
     f.url, 
     f.user_id, 
     u.name AS user_name,
-    fc.follower_count
+    fc.follower_count,
+    pc.post_count
 FROM feeds f
 INNER JOIN users u
 ON f.user_id = u.id
-INNER JOIN follow_count fc
+LEFT JOIN follow_count fc
 ON f.id = fc.feed_id
+LEFT JOIN post_count pc
+ON f.id = pc.feed_id
 `
 
 type GetFeedsRow struct {
@@ -91,7 +103,8 @@ type GetFeedsRow struct {
 	Url           string
 	UserID        uuid.UUID
 	UserName      string
-	FollowerCount int64
+	FollowerCount sql.NullInt64
+	PostCount     sql.NullInt64
 }
 
 func (q *Queries) GetFeeds(ctx context.Context) ([]GetFeedsRow, error) {
@@ -110,6 +123,7 @@ func (q *Queries) GetFeeds(ctx context.Context) ([]GetFeedsRow, error) {
 			&i.UserID,
 			&i.UserName,
 			&i.FollowerCount,
+			&i.PostCount,
 		); err != nil {
 			return nil, err
 		}

@@ -18,12 +18,20 @@ VALUES (
 RETURNING *;
 
 -- name: GetFeeds :many
-WITH follow_count AS (
-    SELECT 
-        feed_id,
-        COUNT(user_id) AS follower_count
-    FROM feed_follows
-    GROUP BY feed_id
+WITH 
+    follow_count AS (
+        SELECT 
+            feed_id,
+            COUNT(user_id) AS follower_count
+        FROM feed_follows
+        GROUP BY feed_id
+),
+    post_count AS (
+        SELECT 
+            feed_id,
+            COUNT(id) AS post_count
+        FROM posts
+        GROUP BY feed_id
 )
 SELECT 
     f.id, 
@@ -31,12 +39,15 @@ SELECT
     f.url, 
     f.user_id, 
     u.name AS user_name,
-    fc.follower_count
+    fc.follower_count,
+    pc.post_count
 FROM feeds f
 INNER JOIN users u
 ON f.user_id = u.id
-INNER JOIN follow_count fc
-ON f.id = fc.feed_id;
+LEFT JOIN follow_count fc
+ON f.id = fc.feed_id
+LEFT JOIN post_count pc
+ON f.id = pc.feed_id;
 
 -- name: GetFeedsToFetch :many
 SELECT

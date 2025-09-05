@@ -166,7 +166,7 @@ func handlerFeeds(s *state.State, cmd command, user database.User) error {
 		}
 		fmt.Printf("> RSS Name: %s\n", feed.Name)
 		fmt.Printf("  URL: %s\n", feed.Url)
-		fmt.Printf("  Added by: %s, followers: %d, posts: _\n", feed.UserName, feed.FollowerCount)
+		fmt.Printf("  Added by: %s, followers: %d, posts: %d\n", feed.UserName, feed.FollowerCount.Int64, feed.PostCount.Int64)
 	}
 
 	return nil

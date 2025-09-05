@@ -3,6 +3,7 @@ package fetch
 import (
 	"context"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"html"
 	"io"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/UnLuckyNikolay/blog-aggregator/internal/database"
 	"github.com/UnLuckyNikolay/blog-aggregator/internal/state"
+	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type RSSFeed struct {
@@ -71,9 +74,30 @@ func fetchFeeds(s *state.State) {
 
 		feed = unescapeFeed(feed)
 
-		fmt.Printf("Fetched posts:\n")
+		fmt.Printf("New posts:\n")
 		for _, item := range feed.Channel.Item {
-			fmt.Printf("> %s\n", item.Title)
+			post, err := s.Db.AddPost(context.Background(), database.AddPostParams{
+				ID:          uuid.New(),
+				CreatedAt:   time.Now(),
+				Title:       toNullString(item.Title),
+				Url:         item.Link,
+				Description: toNullString(item.Description),
+				PublishedAt: toNullTime(item.PubDate),
+				FeedID:      nextFeed.ID,
+			},
+			)
+			if err != nil {
+				var pqErr *pq.Error
+				if errors.As(err, &pqErr) {
+					if pqErr.Code == "23505" { // Unique URL violation
+						continue
+					}
+					fmt.Printf("fetchFeeds: db error (%s): %s\n", pqErr.Code, err)
+				}
+				fmt.Printf("fetchFeeds: error: %s\n", err)
+				continue
+			}
+			fmt.Printf("> `%s`\n", post.Title.String)
 		}
 		fmt.Println()
 	}
