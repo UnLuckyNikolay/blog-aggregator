@@ -18,12 +18,36 @@ VALUES (
 RETURNING *;
 
 -- name: GetFeeds :many
+WITH follow_count AS (
+    SELECT 
+        feed_id,
+        COUNT(user_id) AS follower_count
+    FROM feed_follows
+    GROUP BY feed_id
+)
 SELECT 
-    feeds.id, 
-    feeds.name, 
-    feeds.url, 
-    feeds.user_id, 
-    users.name AS user_name
-FROM feeds
-INNER JOIN users
-ON feeds.user_id = users.id;
+    f.id, 
+    f.name, 
+    f.url, 
+    f.user_id, 
+    u.name AS user_name,
+    fc.follower_count
+FROM feeds f
+INNER JOIN users u
+ON f.user_id = u.id
+INNER JOIN follow_count fc
+ON f.id = fc.feed_id;
+
+-- name: GetFeedsToFetch :many
+SELECT
+    feeds.id,
+    feeds.name,
+    feeds.url
+FROM feeds;
+
+-- name: MarkFeedFetched :exec
+UPDATE feeds
+SET 
+    updated_at = sqlc.arg('time'),
+    last_fetched_at = sqlc.arg('time')
+WHERE id = sqlc.arg('feed_id');

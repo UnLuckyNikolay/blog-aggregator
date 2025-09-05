@@ -94,7 +94,7 @@ WITH del AS (
         AND f.url = $2
     RETURNING ff.feed_id
 )
-SELECT f.id, f.created_at, f.updated_at, f.name, f.url, f.user_id
+SELECT f.id, f.created_at, f.updated_at, f.name, f.url, f.user_id, f.last_fetched_at
 FROM feeds f
 JOIN del
 ON del.feed_id = f.id
@@ -115,6 +115,7 @@ func (q *Queries) DeleteFeedFollow(ctx context.Context, arg DeleteFeedFollowPara
 		&i.Name,
 		&i.Url,
 		&i.UserID,
+		&i.LastFetchedAt,
 	)
 	return i, err
 }

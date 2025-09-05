@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/UnLuckyNikolay/blog-aggregator/internal/database"
-	"github.com/UnLuckyNikolay/blog-aggregator/internal/rssfeed"
+	"github.com/UnLuckyNikolay/blog-aggregator/internal/fetch"
 	"github.com/UnLuckyNikolay/blog-aggregator/internal/state"
 	"github.com/google/uuid"
 )
@@ -84,6 +84,11 @@ func handlerUsers(s *state.State, cmd command) error {
 		log.Fatal(err)
 	}
 
+	if len(users) == 0 {
+		fmt.Println("No users currently. Use command 'register `name`' to start.")
+		return nil
+	}
+
 	for _, user := range users {
 		var currentCheck string
 		if user.Name == s.Cfg.CurrentUserName {
@@ -102,10 +107,7 @@ func handlerAgg(s *state.State, cmd command) error {
 		return errors.New("Command `agg` requires no arguments.")
 	}
 
-	err := rssfeed.Agg(s)
-	if err != nil {
-		return err
-	}
+	fetch.Agg(s, 5*time.Minute)
 
 	return nil
 }
@@ -149,10 +151,22 @@ func handlerFeeds(s *state.State, cmd command, user database.User) error {
 		return err
 	}
 
+	if len(feeds) == 0 {
+		fmt.Println("No feeds currently. Use command 'addfeed `name` `url`' to add a new one.")
+		return nil
+	}
+
+	firstPost := true
+	fmt.Println("Current feeds:")
 	for _, feed := range feeds {
+		if firstPost {
+			firstPost = false
+		} else {
+			fmt.Println()
+		}
 		fmt.Printf("> RSS Name: %s\n", feed.Name)
 		fmt.Printf("  URL: %s\n", feed.Url)
-		fmt.Printf("  Added by user: %s\n", feed.UserName)
+		fmt.Printf("  Added by: %s, followers: %d, posts: _\n", feed.UserName, feed.FollowerCount)
 	}
 
 	return nil
