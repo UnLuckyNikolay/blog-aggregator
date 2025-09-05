@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/UnLuckyNikolay/blog-aggregator/internal/database"
@@ -229,6 +230,38 @@ func handlerUnfollow(s *state.State, cmd command, user database.User) error {
 	}
 
 	fmt.Printf("User %s unfollowed `%s` feed.\n", user.Name, deletedFeed.Name)
+
+	return nil
+}
+
+func handlerBrowse(s *state.State, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return errors.New("Command `browse` requires 1 argument: amount of posts.")
+	}
+	amount, err := strconv.Atoi(cmd.args[0])
+	if err != nil {
+		return errors.New("Command `browse` requires 1 argument: amount of posts.")
+	}
+
+	posts, err := s.Db.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		UserID:     user.ID,
+		PostAmount: int32(amount),
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(posts) == 0 {
+		fmt.Println("No posts to show. Use command `addfeed` or `follow` to subscribe to feeds.")
+		return nil
+	}
+	fmt.Println("Posts:")
+	for _, post := range posts {
+		fmt.Println()
+		fmt.Printf("> %s\n", post.Title.String)
+		fmt.Printf("Feed: %s\n", post.FeedName)
+		fmt.Printf("%s\n", post.Description.String)
+	}
 
 	return nil
 }

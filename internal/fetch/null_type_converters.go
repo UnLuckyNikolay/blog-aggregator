@@ -18,5 +18,6 @@ func toNullTime(timestamp string) sql.NullTime {
 		//fmt.Printf("Time Parse error: %s\n", err)
 		return sql.NullTime{Time: time.Time{}, Valid: false}
 	}
+	//fmt.Printf("Time Parse: parsed %s as %s\n", timestamp, parsedTime)
 	return sql.NullTime{Time: parsedTime, Valid: true}
 }

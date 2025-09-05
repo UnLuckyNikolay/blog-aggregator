@@ -54,7 +54,7 @@ func fetchFeeds(s *state.State) {
 
 		req.Header.Set("User-Agent", "Gator")
 
-		fmt.Printf("Sending a 'GET' request to '%s' (%s)...\n", nextFeed.Name, nextFeed.Url)
+		fmt.Printf("%v: Sending a 'GET' request to '%s' (%s)...\n", time.Now().Format("2006-01-02 15:04:05"), nextFeed.Name, nextFeed.Url)
 		res, err := s.HttpClient.Do(req)
 		if err != nil {
 			fmt.Printf("Error sending a request: %s\n", err)
