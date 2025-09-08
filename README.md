@@ -74,11 +74,13 @@ Use `gator` command to interact with the app:
 gator <command> <arguments>
 ```
 
+To start fetching feeds run `gator agg` in a new terminal window.
+
 Commands:
 * `register <username>` - register a new user
 * `login <username>` - login as the user
 * `users` - list all the users
-* `agg` - start fetching feeds
+* `agg` - start fetching feeds, runs **continuously**
 * `feeds` - list all the feeds
 * `addfeed <feed_name> <feed_url>` - add a new feed
 * `follow <feed_url>` - follow the feed
