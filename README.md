@@ -21,30 +21,37 @@ Tool for keeping track of RSS Feeds. Allows multiple users to follow multiple fe
 
 4. Get the database url. Structure: `postgres://<username>:<password>@localhost:5432/gator?sslmode=disable`. 
 
-    Save it as an environmental variable if you wish:
+    Save it as an environmental variable if you wish (for later usage while building the database, not used by the app itself):
 
     ```bash
-    set GATOR_DB_URL=<db_url>
+    export GATOR_DB_URL=<db_url>
     ```
 
-5. Clone the repo:
+5. Create a `.gatorconfig.json` file in yout home directory and add your url to it:
+
+    ```json
+    {"db_url":"<db_url>"}
+    ```
+
+6. Clone the repo:
 
     ```bash
     git clone https://github.com/UnLuckyNikolay/blog-aggregator
     cd blog-aggregator
     ```
 
-6. Install the app:
+7. Install the app:
 
     ```bash
-    go build -o gator main.go
+    cd cmd/gator
     go install
+    cd ../..
     ```
 
-7. Build the database. Go into the `schema` folder:
+8. Build the database. Go into the `schema` folder:
 
     ```bash
-    cd blog-aggregator/sql/schema
+    cd sql/schema
     ```
 
     and run this command for each file in order of the numbers:
