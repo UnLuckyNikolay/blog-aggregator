@@ -75,13 +75,13 @@ gator <command> <arguments>
 ```
 
 Commands:
-* register <username> - register a new user
-* login <username> - login as the user
-* users - list all the users
-* agg - start fetching feeds
-* feeds - list all the feeds
-* addfeed <feed_name> <feed_url> - add a new feed
-* follow <feed_url> - follow the feed
-* unfollow <feed_url> - unfollow the feed
-* following - list all the followed feed for the current used
-* browse <amount_of_posts> - list N of the last posts from the followed feeds
+* `register <username>` - register a new user
+* `login <username>` - login as the user
+* `users` - list all the users
+* `agg` - start fetching feeds
+* `feeds` - list all the feeds
+* `addfeed <feed_name> <feed_url>` - add a new feed
+* `follow <feed_url>` - follow the feed
+* `unfollow <feed_url>` - unfollow the feed
+* `following` - list all the followed feed for the current used
+* `browse <amount_of_posts>` - list N of the last posts from the followed feeds
