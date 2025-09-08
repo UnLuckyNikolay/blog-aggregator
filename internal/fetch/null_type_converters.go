@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+// toNullString parses RSS text into sql.NullString.
+//
+// Returns empty string and Valid=false if parsing fails.
 func toNullString(text string) sql.NullString {
 	if text == "" {
 		return sql.NullString{String: "", Valid: false}
@@ -12,6 +15,9 @@ func toNullString(text string) sql.NullString {
 	return sql.NullString{String: text, Valid: true}
 }
 
+// toNullTime parses RSS timestamp into sql.NullTime.
+//
+// Returns empty time.Time and Valid=false if parsing fails.
 func toNullTime(timestamp string) sql.NullTime {
 	parsedTime, err := time.Parse("Mon, 02 Jan 2006 15:04:05 MST", timestamp)
 	if err != nil {

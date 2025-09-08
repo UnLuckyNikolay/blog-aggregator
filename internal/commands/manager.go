@@ -30,6 +30,7 @@ func (c *CommandManager) Initialize() {
 	c.register("browse", middlewareLoggedIn(handlerBrowse))
 }
 
+// HandleCommand handles commands passed by user. List of the registered commands is inside (c *CommandManager) Initialize().
 func (c *CommandManager) HandleCommand(s *state.State, osArgs []string) error {
 	if len(osArgs) < 2 {
 		return fmt.Errorf("Not enough arguments.")
@@ -51,6 +52,7 @@ func (c *CommandManager) HandleCommand(s *state.State, osArgs []string) error {
 	return nil
 }
 
+// register is used to register handler commands.
 func (c *CommandManager) register(name string, f func(*state.State, command) error) {
 	c.list[name] = f
 }

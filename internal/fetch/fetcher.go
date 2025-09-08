@@ -32,6 +32,7 @@ type RSSItem struct {
 	PubDate     string `xml:"pubDate"`
 }
 
+// fetchFeeds fetches all the feeds and adds the posts to the database.
 func fetchFeeds(s *state.State) {
 	feeds, err := s.Db.GetFeedsToFetch(context.Background())
 	if err != nil {
@@ -103,6 +104,7 @@ func fetchFeeds(s *state.State) {
 	}
 }
 
+// unescapeFeed unescapes title and description of the RSS feed and all the items within it.
 func unescapeFeed(feed RSSFeed) RSSFeed {
 	feed.Channel.Title = html.UnescapeString(feed.Channel.Title)
 	feed.Channel.Description = html.UnescapeString(feed.Channel.Description)

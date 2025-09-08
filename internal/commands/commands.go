@@ -14,6 +14,9 @@ import (
 	"github.com/google/uuid"
 )
 
+// handlerLogin is used to login a registered user.
+//
+// Arguments (1): username.
 func handlerLogin(s *state.State, cmd command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Command `login` requires 1 argument: username.")
@@ -34,6 +37,9 @@ func handlerLogin(s *state.State, cmd command) error {
 	return nil
 }
 
+// handlerRegister is used to register a new user.
+//
+// Arguments (1): username.
 func handlerRegister(s *state.State, cmd command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Command `register` requires 1 argument: username.")
@@ -51,7 +57,6 @@ func handlerRegister(s *state.State, cmd command) error {
 	}
 
 	fmt.Printf("User `%s` successfully registered.\n", user.Name)
-	//fmt.Println(user)
 	err = s.Cfg.SetUser(name)
 	if err != nil {
 		return err
@@ -60,6 +65,9 @@ func handlerRegister(s *state.State, cmd command) error {
 	return nil
 }
 
+// handlerReset is used to clear the users table (which clears the rest of the tables).
+//
+// Arguments (0).
 func handlerReset(s *state.State, cmd command) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Command `reset` requires no arguments.")
@@ -75,6 +83,9 @@ func handlerReset(s *state.State, cmd command) error {
 	return nil
 }
 
+// handlerUsers is used to show the list of registered users.
+//
+// Arguments (0).
 func handlerUsers(s *state.State, cmd command) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Command `users` requires no arguments.")
@@ -103,6 +114,9 @@ func handlerUsers(s *state.State, cmd command) error {
 	return nil
 }
 
+// handlerAgg is used to continuously fetch the feeds.
+//
+// Arguments (0).
 func handlerAgg(s *state.State, cmd command) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Command `agg` requires no arguments.")
@@ -113,6 +127,10 @@ func handlerAgg(s *state.State, cmd command) error {
 	return nil
 }
 
+// handlerAddfeed is used to add a new feed.
+// Requires the user to be logged in.
+//
+// Arguments (2): name, url.
 func handlerAddfeed(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return errors.New("Command `addfeed` requires 2 arguments: name, url.")
@@ -142,6 +160,10 @@ func handlerAddfeed(s *state.State, cmd command, user database.User) error {
 	return nil
 }
 
+// handlerFeeds is used to list added feeds.
+// Requires the user to be logged in.
+//
+// Arguments (0).
 func handlerFeeds(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Command `feeds` requires no arguments.")
@@ -173,6 +195,10 @@ func handlerFeeds(s *state.State, cmd command, user database.User) error {
 	return nil
 }
 
+// handlerFollow is used to follow a feed.
+// Requires the user to be logged in.
+//
+// Arguments (1): url.
 func handlerFollow(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Command `follow` requires 1 argument: url.")
@@ -194,6 +220,10 @@ func handlerFollow(s *state.State, cmd command, user database.User) error {
 	return nil
 }
 
+// handlerFollowing is used to list the feeds that current user follows.
+// Requires the user to be logged in.
+//
+// Arguments (0).
 func handlerFollowing(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 0 {
 		return errors.New("Command `following` requires 0 arguments.")
@@ -216,6 +246,10 @@ func handlerFollowing(s *state.State, cmd command, user database.User) error {
 	return nil
 }
 
+// handlerUnfollow is used to unfollow a feed.
+// Requires the user to be logged in.
+//
+// Arguments (1): url.
 func handlerUnfollow(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Command `unfollow` requires 1 argument: feed url.")
@@ -234,6 +268,10 @@ func handlerUnfollow(s *state.State, cmd command, user database.User) error {
 	return nil
 }
 
+// handlerBrowse is used to show an N of the last posts from followed feeds.
+// Requires the user to be logged in.
+//
+// Arguments (1): amount of posts.
 func handlerBrowse(s *state.State, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Command `browse` requires 1 argument: amount of posts.")
